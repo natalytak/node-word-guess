@@ -1,4 +1,5 @@
 var inquirer = require("inquirer");
+var color = require("colors");
 var Word = require("./word.js");
 
 var animals = ["koala", "elephant", "walrus", "hedgehog", "hamster", "mongoose", "monkey", 
@@ -6,70 +7,68 @@ var animals = ["koala", "elephant", "walrus", "hedgehog", "hamster", "mongoose",
 "flamingo", "penguin", "hummingbird", "anaconda", "chameleon", "hammerhead", "lion", 
 "catfish", "octopus", "lobster", "dragonfly"];
 
-var randomIndex = Math.floor(Math.random() * animals.length);
-var randomWord = animals[randomIndex];
-
-computerWord = new Word(randomWord);
-
+var randomWord = animals[Math.floor(Math.random() * animals.length)];
+var newWord = new Word(randomWord);
 var pickWord = false;
 var correctLetters = [];
 var guessesLeft = 10;
 
-function check() {
+function pickMyWord() {
     if (pickWord === true) {
-        randomIndex = Math.floor(Math.random() * animals.length);
-        randomWord = animals[randomIndex];
-        computerWord = new Word(randomWord);
+        randomWord = animals[Math.floor(Math.random() * animals.length)];
+        newWord = new Word(randomWord);
         pickWord = false;
     }
+}
 
-    var wordComplete = [];
-    computerWord.newLetterArr.forEach(completeCheck);
-    if (wordComplete.includes(false)) {
+function check() {
+    pickMyWord();
+    var fullWord = [];
+    newWord.newLetterArr.forEach(completeCheck);
+    if (fullWord.includes(false)) {
         inquirer
             .prompt([
                 {
                     type: "input",
-                    message: "Guess a letter!",
-                    name: "userinput"
+                    message: "Guess a letter:".yellow,
+                    name: "userInput"
                 }
             ])
             .then(function (inquirerResponse) {
-                yourGuess = inquirerResponse.userinput;
+                yourGuess = inquirerResponse.userInput.toLowerCase();
                         
-                        var wordCheckArray = [];
-                        computerWord.guess(yourGuess);
-                        computerWord.newLetterArr.forEach(wordCheck);
-                        if (wordCheckArray.join('') === wordComplete.join('')) {
-                            console.log("\nINCORRECT!\n");
-                            computerWord.log();
+                        var wordCheckArr = [];
+                        newWord.guess(yourGuess);
+                        newWord.newLetterArr.forEach(wordCheck);
+                        if (wordCheckArr.join('') === fullWord.join('')) {
+                            console.log("\nINCORRECT!\n".red);
+                            newWord.log();
                             guessesLeft--;
                             console.log("Guesses Left: " + guessesLeft + "\n");
                         } else {
-                            console.log("\nCORRECT!\n");
-                            computerWord.log();
+                            console.log("\nCORRECT!\n".green);
+                            newWord.log();
                             correctLetters.push(yourGuess);
                         }
 
                         if (guessesLeft > 0) {
                             check();
                         } else {
-                            console.log("YOU LOST!\n");
+                            console.log("YOU LOST!".black.bgWhite);
                             reset();
                         }
 
                         function wordCheck(key) {
-                            wordCheckArray.push(key.isGuessed);
+                            wordCheckArr.push(key.isGuessed);
                         }
-                    }
-            )
+                    })
     } else {
-        console.log("YOU WON! CONGRATS!\n");
+        console.log("YOU WON! CONGRATS!\n".rainbow);
         reset();
     }
 
     function completeCheck(key) {
-        wordComplete.push(key.isGuessed);
+        fullWord.push(key.isGuessed);
     }
 }
 
@@ -78,13 +77,13 @@ function reset() {
         .prompt([
             {
                 type: "list",
-                message: "What would you like to do now?",
-                choices: ["Play Again", "Exit"],
+                message: "Would you like to play again?",
+                choices: ["PLAY AGAIN", "EXIT"],
                 name: "reset"
             }
         ])
         .then(function (input) {
-            if (input.reset === "Play Again") {
+            if (input.reset === "PLAY AGAIN") {
                 pickWord = true;
                 correctLetters = [];
                 guessesLeft = 10;
@@ -94,5 +93,4 @@ function reset() {
             }
         })
 }
-
 check();
